@@ -1,0 +1,54 @@
+version: '3'
+networks:
+    lara-net:
+        driver: bridge
+services:
+    app:
+        container_name: php-node
+        image: php-node
+        working_dir: /var/www
+        volumes: 
+            - ./:/var/www
+        #restart: always
+        networks:
+            - lara-net
+    db:
+        container_name: mysql
+        image: mysql:5.7
+        tty: true
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            #MYSQL_ROOT_PASSWORD: null
+        #volumes:
+            #- ./mysql:/docker-entrypoint-initdb.d
+        ports:
+            - 3306:3306
+        #restart: always
+        networks:
+            - lara-net
+    redis:
+        container_name: redis
+        image: redis:5.0.7
+        ports:
+            - 6379:6379
+        #restart: always
+        networks:
+            - lara-net
+    nginx:
+        container_name: nginx
+        image: nginx
+        ports:
+            - 8000:80
+            - 443:443
+        volumes:
+            - ./:/var/www
+            - ./nginx/conf.d:/etc/nginx/conf.d
+            #- ./nginx/logs:/var/log/nginx/
+        depends_on:
+            - app
+            - db
+            - redis
+        #restart: always
+        networks:
+            - lara-net
